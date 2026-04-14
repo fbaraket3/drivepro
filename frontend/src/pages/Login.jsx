@@ -59,8 +59,7 @@ export default function Login() {
 
           <div className="divider" />
           <div style={{ fontSize: 12, color: 'var(--text3)', lineHeight: 1.8 }}>
-            <div><strong>Admin:</strong> admin@drivepro.tn / admin123</div>
-            <div><strong>Teacher:</strong> sami@drivepro.tn / teacher123</div>
+            
           </div>
         </div>
       </div>
