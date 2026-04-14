@@ -46,9 +46,9 @@ function startServer() {
     res.status(500).json({ error: err.message || 'Internal server error' });
   });
 
-  app.listen(PORT, () => {
-    console.log(`DrivePro API running -> http://localhost:${PORT}`);
-    console.log('  Admin:   admin@drivepro.tn  / admin123');
-    console.log('  Teacher: sami@drivepro.tn   / teacher123');
-  });
+  app.listen(PORT, "0.0.0.0", () => {
+  console.log(`DrivePro API running -> http://localhost:${PORT}`);
+  console.log('  Admin:   admin@drivepro.tn  / admin123');
+  console.log('  Teacher: sami@drivepro.tn   / teacher123');
+});
 }
