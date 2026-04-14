@@ -34,7 +34,7 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
 
   // Pre-select teacher: if teacher user, always themselves
   const defaultTeacherId = currentUser?.role === 'teacher'
-    ? String(currentUser.id)
+    ? String(currentUser._id || currentUser.id)
     : (session?.teacher_id ? String(session.teacher_id) : (teachers[0]?.id ? String(teachers[0].id) : ''));
 
   const [form, setForm] = useState({
@@ -174,7 +174,7 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
 
 // ── Enroll Students Modal (theory-only) ───────────────────────────────────────
 function EnrollModal({ session, students, onClose, onRefresh }) {
-  const [enrolled, setEnrolled] = useState(session.students?.map(s => s.id) || []);
+  const [enrolled, setEnrolled] = useState(session.students?.map(s => s._id) || []);
   const [search, setSearch] = useState('');
 
   const ltSlug = session.lesson_type_slug;
@@ -190,7 +190,7 @@ function EnrollModal({ session, students, onClose, onRefresh }) {
   );
 
   async function toggle(student) {
-    const isIn = enrolled.includes(student.id);
+    const isIn = enrolled.includes(student._id);
     try {
       if (isIn) {
         await api.unenrollStudent(session.id, student.id);
@@ -274,12 +274,12 @@ export default function Classes({ teacherMode, currentUser }) {
 
   // Teachers only see/use their own teacher entry
   const availableTeachers = teacherMode && currentUser
-    ? teachers.filter(t => t.id === currentUser.id)
+    ? teachers.filter(t => t._id === currentUser._id || t.id === currentUser.id)
     : teachers;
 
   async function handleSave(form) {
     try {
-      if (modal?.id) { await api.updateClass(modal.id, form); toast.success('Class updated'); }
+      if (modal?._id) { await api.updateClass(modal.id, form); toast.success('Class updated'); }
       else           { await api.createClass(form);           toast.success('Class created'); }
       load();
     } catch (e) { toast.error(e.message); throw e; }
@@ -295,7 +295,7 @@ export default function Classes({ teacherMode, currentUser }) {
       toast.error('Cannot add students to Driving/Parking sessions after creation');
       return;
     }
-    const full = await api.getClass(session.id);
+    const full = await api.getClass(session._id);
     setEnrollModal(full);
   }
 
@@ -367,7 +367,7 @@ export default function Classes({ teacherMode, currentUser }) {
                           <button className="btn btn-sm" onClick={() => openEnroll(s)}>Students</button>
                         )}
                         <button className="btn btn-sm" onClick={() => setModal(s)}>Edit</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(s.id)}>Delete</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(s._id)}>Delete</button>
                       </div>
                     </td>
                   </tr>
