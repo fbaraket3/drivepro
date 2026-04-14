@@ -72,14 +72,14 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
       toast.error('Driving/Parking teachers must assign a student when creating a class'); return;
     }
     const payload = {
-      lesson_type_id: Number(form.lesson_type_id),
-      teacher_id:     Number(form.teacher_id),
+      lesson_type_id: form(form.lesson_type_id),
+      teacher_id:     form(form.teacher_id),
       date:           form.date,
       start_time:     form.start_time,
       end_time:       form.end_time,
       notes:          form.notes || null,
     };
-    if (!isEdit && form.student_id) payload.student_id = Number(form.student_id);
+    if (!isEdit && form.student_id) payload.student_id = form.student_id;
     await onSave(payload);
     onClose();
   }
