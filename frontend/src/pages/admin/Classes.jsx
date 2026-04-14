@@ -30,7 +30,7 @@ function TeacherTypeBadge({ type }) {
 // For driving_parking teachers: student must be selected at creation
 // For theory teachers: optional at creation, can add later
 function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSave, onClose }) {
-  const isEdit = !!session?.id;
+  const isEdit = !!session?._id;
 
   // Pre-select teacher: if teacher user, always themselves
   const defaultTeacherId = currentUser?.role === 'teacher'
@@ -193,11 +193,11 @@ function EnrollModal({ session, students, onClose, onRefresh }) {
     const isIn = enrolled.includes(student._id);
     try {
       if (isIn) {
-        await api.unenrollStudent(session.id, student.id);
+        await api.unenrollStudent(session._id, student.id);
         setEnrolled(e => e.filter(x => x !== student.id));
         toast.info(`${student.name} removed`);
       } else {
-        await api.enrollStudent(session.id, student.id);
+        await api.enrollStudent(session._id, student.id);
         setEnrolled(e => [...e, student.id]);
         toast.success(`${student.name} enrolled`);
       }
@@ -279,7 +279,7 @@ export default function Classes({ teacherMode, currentUser }) {
 
   async function handleSave(form) {
     try {
-      if (modal?._id) { await api.updateClass(modal.id, form); toast.success('Class updated'); }
+      if (modal?._id) { await api.updateClass(modal._id, form); toast.success('Class updated'); }
       else           { await api.createClass(form);           toast.success('Class created'); }
       load();
     } catch (e) { toast.error(e.message); throw e; }
@@ -381,9 +381,9 @@ export default function Classes({ teacherMode, currentUser }) {
         </div>
       </div>
 
-      <Modal open={!!modal} title={modal?.id ? 'Edit Class' : 'New Class'} onClose={() => setModal(null)}>
+      <Modal open={!!modal} title={modal?._id ? 'Edit Class' : 'New Class'} onClose={() => setModal(null)}>
         <ClassForm
-          session={modal?.id ? modal : null}
+          session={modal?._id ? modal : null}
           lessonTypes={lessonTypes}
           teachers={availableTeachers}
           students={students}
