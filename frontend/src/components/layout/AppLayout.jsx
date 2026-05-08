@@ -41,10 +41,11 @@ export default function AppLayout() {
         <div className="sidebar-brand">
           <h1>🚗 DrivePro</h1>
           <span>Driving School Manager</span>
-        </div>
-        <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
+          <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
           ✕
         </button>
+        </div>
+        
         <nav className="sidebar-nav">
           <div className="nav-section">{isAdmin ? 'Admin' : 'Teacher'}</div>
           {navItems.map(({ to, end, label, icon: Icon }) => (
