@@ -1,6 +1,7 @@
 // src/components/layout/AppLayout.jsx — v2: teacher type label + payments/tests nav
 
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const ADMIN_NAV = [
@@ -33,15 +34,17 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const navItems = isAdmin ? ADMIN_NAV : TEACHER_NAV;
   const typeBadge = !isAdmin && user?.teacher_type ? TEACHER_TYPE_BADGE[user.teacher_type] : null;
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <h1>🚗 DrivePro</h1>
           <span>Driving School Manager</span>
         </div>
-
+        <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
+          ✕
+        </button>
         <nav className="sidebar-nav">
           <div className="nav-section">{isAdmin ? 'Admin' : 'Teacher'}</div>
           {navItems.map(({ to, end, label, icon: Icon }) => (
@@ -72,6 +75,12 @@ export default function AppLayout() {
       </aside>
 
       <div className="main-area">
+        <div className="mobile-topbar">
+  <button className="hamburger" onClick={() => setSidebarOpen(true)}>
+    ☰
+  </button>
+  <div className="mobile-title">DrivePro</div>
+</div>
         <Outlet />
       </div>
     </div>
