@@ -8,15 +8,15 @@ import { useAuth } from '../../context/AuthContext';
 // ── Test Form ─────────────────────────────────────────────────────────────────
 function TestForm({ test, students, lessonTypes, onSave, onClose }) {
   const [form, setForm] = useState(test || {
-    student_id:     students[0]?.id || '',
-    lesson_type_id: lessonTypes[0]?.id || '',
+    student_id:     students[0]?._id || '',
+    lesson_type_id: lessonTypes[0]?._id || '',
     date:           new Date().toISOString().slice(0, 10),
     result:         'pass',
     cost:           '',
     notes:          '',
   });
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
-  const selectedType = lessonTypes.find(lt => lt.id === parseInt(form.lesson_type_id));
+  const selectedType = lessonTypes.find(lt => lt._id === form.lesson_type_id);
 
   async function submit() {
     if (!form.student_id || !form.lesson_type_id || !form.date) {
@@ -24,8 +24,8 @@ function TestForm({ test, students, lessonTypes, onSave, onClose }) {
     }
     await onSave({
       ...form,
-      student_id:     Number(form.student_id),
-      lesson_type_id: Number(form.lesson_type_id),
+      student_id:     form.student_id,
+      lesson_type_id: form.lesson_type_id,
       cost:           Number(form.cost || selectedType?.test_cost || 0),
     });
     onClose();
@@ -34,18 +34,18 @@ function TestForm({ test, students, lessonTypes, onSave, onClose }) {
   return (
     <>
       <div className="modal-body">
-        {!test?.id && (
+        {!test?._id && (
           <div className="form-group">
             <label className="form-label">Student *</label>
             <select className="form-select" value={form.student_id} onChange={set('student_id')}>
-              {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.current_stage})</option>)}
+              {students.map(s => <option key={s._id} value={s._id}>{s.name} ({s.current_stage})</option>)}
             </select>
           </div>
         )}
         <div className="form-group">
           <label className="form-label">Lesson Type *</label>
-          <select className="form-select" value={form.lesson_type_id} onChange={set('lesson_type_id')} disabled={!!test?.id}>
-            {lessonTypes.map(lt => <option key={lt.id} value={lt.id}>{lt.name}</option>)}
+          <select className="form-select" value={form.lesson_type_id} onChange={set('lesson_type_id')} disabled={!!test?._id}>
+            {lessonTypes.map(lt => <option key={lt._id} value={lt._id}>{lt.name}</option>)}
           </select>
         </div>
         <div className="form-grid-2">
@@ -80,7 +80,7 @@ function TestForm({ test, students, lessonTypes, onSave, onClose }) {
       <div className="modal-footer">
         <button className="btn" onClick={onClose}>Cancel</button>
         <button className={`btn ${form.result === 'pass' ? 'btn-success' : 'btn-primary'}`} onClick={submit}>
-          {test?.id ? 'Save Changes' : 'Record Test'}
+          {test?._id ? 'Save Changes' : 'Record Test'}
         </button>
       </div>
     </>
@@ -106,7 +106,7 @@ function AuditModal({ testId, onClose }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {audit.map(a => (
-              <div key={a.id} style={{
+              <div key={a._id} style={{
                 padding: '10px 12px', borderRadius: 'var(--radius-sm)',
                 background: 'var(--surface2)', border: '1px solid var(--border)',
               }}>
@@ -162,8 +162,8 @@ export default function TestsPage() {
 
   async function handleSave(form) {
     try {
-      if (modal?.id) {
-        await api.updateTest(modal.id, form);
+      if (modal?._id) {
+        await api.updateTest(modal._id, form);
         toast.success('Test result updated — audit log saved');
       } else {
         const res = await api.createTest(form);
@@ -225,7 +225,7 @@ export default function TestsPage() {
             </thead>
             <tbody>
               {filtered.map(t => (
-                <tr key={t.id}>
+                <tr key={t._id}>
                   <td className="fw-500">{t.student_name}</td>
                   <td><span className={`badge badge-${t.slug}`}>{t.lesson_type_name}</span></td>
                   <td><span className="badge badge-gray">#{t.attempt_number}</span></td>
@@ -240,10 +240,10 @@ export default function TestsPage() {
                   <td>
                     <div className="flex-row">
                       <button className="btn btn-sm" onClick={() => setModal(t)}>Edit</button>
-                      <button className="btn btn-sm" onClick={() => setAuditModal(t.id)}
+                      <button className="btn btn-sm" onClick={() => setAuditModal(t._id)}
                         style={{ fontSize: 11 }}>History</button>
                       {isAdmin && (
-                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(t.id)}>Delete</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(t._id)}>Delete</button>
                       )}
                     </div>
                   </td>
@@ -257,8 +257,8 @@ export default function TestsPage() {
         </div>
       </div>
 
-      <Modal open={!!modal} title={modal?.id ? 'Edit Test Result' : 'Record Test'} onClose={() => setModal(null)}>
-        <TestForm test={modal?.id ? modal : null} students={students} lessonTypes={lessonTypes}
+      <Modal open={!!modal} title={modal?._id ? 'Edit Test Result' : 'Record Test'} onClose={() => setModal(null)}>
+        <TestForm test={modal?._id ? modal : null} students={students} lessonTypes={lessonTypes}
           onSave={handleSave} onClose={() => setModal(null)} />
       </Modal>
 
