@@ -17,7 +17,7 @@ function PaymentForm({ payment, students, onSave, onClose }) {
 
   async function submit() {
     if (!form.student_id || !form.amount) { toast.error('Student and amount required'); return; }
-    await onSave({ ...form, student_id: form.student_id, amount: Number(form.amount) });
+    await onSave({ ...form, student_id: String(form.student_id), amount: Number(form.amount) });
     onClose();
   }
 
