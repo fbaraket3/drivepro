@@ -1,6 +1,6 @@
 // src/pages/admin/Classes.jsx — v2: teacher_type enforcement in UI
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../../utils/api';
 import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, SearchInput } from '../../components/shared/UI';
 
@@ -35,10 +35,10 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
   // Pre-select teacher: if teacher user, always themselves
   const defaultTeacherId = currentUser?.role === 'teacher'
     ? String(currentUser._id || currentUser.id)
-    : (session?.teacher_id ? String(session.teacher_id) : (teachers[0]?.id ? String(teachers[0].id) : ''));
+    : (session?.teacher_id ? String(session.teacher_id) : (teachers[0]?._id ? String(teachers[0]._id) : ''));
 
   const [form, setForm] = useState({
-    lesson_type_id: session?.lesson_type_id ? String(session.lesson_type_id) : (lessonTypes[0]?.id ? String(lessonTypes[0].id) : ''),
+    lesson_type_id: session?.lesson_type_id ? String(session.lesson_type_id) : (lessonTypes[0]?._id ? String(lessonTypes[0]._id) : ''),
     teacher_id:     defaultTeacherId,
     date:           session?.date || new Date().toISOString().slice(0, 10),
     start_time:     session?.start_time || '09:00',
@@ -50,12 +50,12 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
   // Derive selected teacher's type
-  const selectedTeacher = teachers.find(t => String(t.id) === String(form.teacher_id));
+  const selectedTeacher = teachers.find(t => String(t._id || t.id) === String(form.teacher_id));
   const isDrivingParking = selectedTeacher?.teacher_type === 'driving_parking';
 
   // Filter students eligible for the selected lesson type
   const eligibleStudents = useMemo(() => {
-    const lt = lessonTypes.find(lt => String(lt.id) === String(form.lesson_type_id));
+    const lt = lessonTypes.find(lt => String(lt._id || lt.id) === String(form.lesson_type_id));
     if (!lt) return students;
     const stageOrder = ['theory', 'driving', 'parking', 'completed'];
     const ltIdx = stageOrder.indexOf(lt.slug);
@@ -108,7 +108,7 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
           <div className="form-group">
             <label className="form-label">Lesson Type *</label>
             <select className="form-select" value={form.lesson_type_id} onChange={set('lesson_type_id')} disabled={isEdit}>
-              {lessonTypes.map(lt => <option key={lt.id} value={lt.id}>{lt.name} — {lt.class_cost} TND</option>)}
+              {lessonTypes.map(lt => <option key={lt._id || lt.id} value={lt._id || lt.id}>{lt.name} — {lt.class_cost} TND</option>)}
             </select>
           </div>
           <div className="form-group">
@@ -116,7 +116,7 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
             <select className="form-select" value={form.teacher_id} onChange={set('teacher_id')}
               disabled={isEdit || currentUser?.role === 'teacher'}>
               {teachers.map(t => (
-                <option key={t.id} value={t.id}>
+                <option key={t._id || t.id} value={t._id || t.id}>
                   {t.name} ({t.teacher_type === 'driving_parking' ? 'Driving/Parking' : 'Theory'})
                 </option>
               ))}
@@ -146,7 +146,7 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
             <select className="form-select" value={form.student_id} onChange={set('student_id')}>
               {!isDrivingParking && <option value="">— No student yet —</option>}
               {eligibleStudents.map(s => (
-                <option key={s.id} value={s.id}>{s.name} ({s.current_stage})</option>
+                <option key={s._id || s.id} value={s._id || s.id}>{s.name} ({s.current_stage})</option>
               ))}
             </select>
             {isDrivingParking && !form.student_id && (
@@ -206,6 +206,7 @@ function EnrollModal({ session, students, onClose, onRefresh }) {
   }
 
   return (
+  
     <>
       <div className="modal-body">
         <div style={{ padding: '8px 12px', background: 'var(--surface2)', borderRadius: 'var(--radius-sm)', fontSize: 13, marginBottom: 12 }}>
@@ -218,9 +219,10 @@ function EnrollModal({ session, students, onClose, onRefresh }) {
         <SearchInput value={search} onChange={setSearch} placeholder="Search students..." />
         <div style={{ marginTop: 10, maxHeight: 280, overflowY: 'auto' }}>
           {filtered.map(s => {
-            const isIn = enrolled.includes(s.id);
+            const studentId = s._id || s.id;
+            const isIn = enrolled.includes(studentId);
             return (
-              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--border)' }}>
+              <div key={studentId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--border)' }}>
                 <input type="checkbox" checked={isIn} onChange={() => toggle(s)}
                   style={{ width: 16, height: 16, cursor: 'pointer' }} />
                 <div style={{ flex: 1 }}>
@@ -290,6 +292,9 @@ export default function Classes({ teacherMode, currentUser }) {
     catch (e) { toast.error(e.message); }
   }
 
+  const handleCloseModal = useCallback(() => setModal(null), []);
+  const handleCloseEnrollModal = useCallback(() => setEnrollModal(null), []);
+
   async function openEnroll(session) {
     if (session.teacher_type === 'driving_parking') {
       toast.error('Cannot add students to Driving/Parking sessions after creation');
@@ -302,6 +307,7 @@ export default function Classes({ teacherMode, currentUser }) {
   if (loading) return <LoadingPage />;
 
   return (
+    
     <div className="page-content">
       <div className="page-header">
         <h1 className="page-title">{teacherMode ? 'My Classes' : 'Classes'}</h1>
@@ -334,7 +340,7 @@ export default function Classes({ teacherMode, currentUser }) {
                 const tc = TYPE_COLORS[s.lesson_type_slug] || {};
                 const isSingle = s.max_students === 1;
                 return (
-                  <tr key={s.id}>
+                  <tr key={s._id || s.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <div style={{ width: 3, height: 28, borderRadius: 2, background: tc.color, flexShrink: 0 }} />
@@ -367,7 +373,7 @@ export default function Classes({ teacherMode, currentUser }) {
                           <button className="btn btn-sm" onClick={() => openEnroll(s)}>Students</button>
                         )}
                         <button className="btn btn-sm" onClick={() => setModal(s)}>Edit</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(s._id)}>Delete</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => setConfirm(s._id || s.id)}>Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -381,7 +387,7 @@ export default function Classes({ teacherMode, currentUser }) {
         </div>
       </div>
 
-      <Modal open={!!modal} title={modal?._id ? 'Edit Class' : 'New Class'} onClose={() => setModal(null)}>
+      <Modal open={!!modal} title={modal?._id ? 'Edit Class' : 'New Class'} onClose={handleCloseModal}>
         <ClassForm
           session={modal?._id ? modal : null}
           lessonTypes={lessonTypes}
@@ -389,16 +395,16 @@ export default function Classes({ teacherMode, currentUser }) {
           students={students}
           currentUser={currentUser}
           onSave={handleSave}
-          onClose={() => setModal(null)}
+          onClose={handleCloseModal}
         />
       </Modal>
 
-      <Modal open={!!enrollModal} title="Manage Students" onClose={() => setEnrollModal(null)}>
+      <Modal open={!!enrollModal} title="Manage Students" onClose={handleCloseEnrollModal}>
         {enrollModal && (
           <EnrollModal
             session={enrollModal}
             students={students}
-            onClose={() => setEnrollModal(null)}
+            onClose={handleCloseEnrollModal}
             onRefresh={load}
           />
         )}

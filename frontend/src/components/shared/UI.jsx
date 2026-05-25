@@ -28,12 +28,13 @@ export function ToastProvider() {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 export function Modal({ open, title, onClose, children, maxWidth = 560 }) {
+  const handleEscape = useCallback((e) => { if (e.key === 'Escape') onClose(); }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, onClose]);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [open, handleEscape]);
 
   if (!open) return null;
   return (
