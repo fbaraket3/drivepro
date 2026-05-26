@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../../utils/api';
-import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, SearchInput } from '../../components/shared/UI';
+import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, SearchInput, Autocomplete } from '../../components/shared/UI';
 
 const TYPE_COLORS = {
   theory:  { color: 'var(--theory-color)',  bg: 'var(--theory-bg)' },
@@ -143,12 +143,15 @@ function ClassForm({ session, lessonTypes, teachers, students, currentUser, onSa
             <label className="form-label">
               {isDrivingParking ? 'Student * (required)' : 'Student (optional — can add later)'}
             </label>
-            <select className="form-select" value={form.student_id} onChange={set('student_id')}>
-              {!isDrivingParking && <option value="">— No student yet —</option>}
-              {eligibleStudents.map(s => (
-                <option key={s._id || s.id} value={s._id || s.id}>{s.name} ({s.current_stage})</option>
-              ))}
-            </select>
+            <Autocomplete
+              options={eligibleStudents}
+              value={form.student_id}
+              onChange={val => setForm(f => ({ ...f, student_id: val }))}
+              placeholder={isDrivingParking ? 'Search student...' : 'Search student (optional)...'}
+              valueKey="_id"
+              searchKey="name"
+              renderItem={s => `${s.name} (${s.current_stage})`}
+            />
             {isDrivingParking && !form.student_id && (
               <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 4 }}>
                 A student must be selected for Driving/Parking sessions

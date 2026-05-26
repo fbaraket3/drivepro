@@ -181,3 +181,81 @@ export function FilterPills({ options, value, onChange }) {
     </div>
   );
 }
+
+// ─── Autocomplete ───────────────────────────────────────────────────────────────
+export function Autocomplete({ options, value, onChange, placeholder, displayKey = 'name', valueKey = 'id', renderItem, searchKey }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (!search) return options;
+    const q = search.toLowerCase();
+    const keyToUse = searchKey || displayKey;
+    return options.filter(opt => {
+      const display = typeof keyToUse === 'function' ? keyToUse(opt) : keyToUse.split('.').reduce((o, k) => o?.[k], opt);
+      return display?.toLowerCase().includes(q);
+    });
+  }, [options, search, displayKey, searchKey]);
+
+  const selected = options.find(opt => String(opt[valueKey]) === String(value));
+
+  const handleSelect = (opt) => {
+    onChange(opt[valueKey]);
+    setSearch('');
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    setSearch(e.target.value);
+    setIsOpen(true);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => setIsOpen(false), 150);
+  };
+
+  const handleFocus = () => {
+    setIsOpen(true);
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <input
+        className="form-input"
+        type="text"
+        placeholder={placeholder || 'Search...'}
+        value={search}
+        onChange={handleInputChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={(e) => { if (e.key === 'Escape') setIsOpen(false); }}
+      />
+      {isOpen && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+          maxHeight: 200, overflowY: 'auto', zIndex: 100, marginTop: 4,
+        }}>
+          {filtered.length === 0 ? (
+            <div className="text-muted text-sm" style={{ padding: '8px 12px' }}>No results found</div>
+          ) : (
+            filtered.map(opt => (
+              <div
+                key={opt[valueKey]}
+                onClick={() => handleSelect(opt)}
+                style={{
+                  padding: '8px 12px', cursor: 'pointer',
+                  background: String(opt[valueKey]) === String(value) ? 'var(--blue-bg)' : 'transparent',
+                  borderBottom: '1px solid var(--border2)',
+                }}
+                className="text-sm"
+              >
+                {renderItem ? renderItem(opt) : (typeof displayKey === 'function' ? displayKey(opt) : displayKey.split('.').reduce((o, k) => o?.[k], opt))}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

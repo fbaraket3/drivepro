@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { api } from '../../utils/api';
-import { toast, Modal, ConfirmModal, EmptyState, LoadingPage } from '../../components/shared/UI';
+import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, Autocomplete } from '../../components/shared/UI';
 import { useAuth } from '../../context/AuthContext';
 
 // ── Test Form ─────────────────────────────────────────────────────────────────
@@ -37,9 +37,15 @@ function TestForm({ test, students, lessonTypes, onSave, onClose }) {
         {!test?._id && (
           <div className="form-group">
             <label className="form-label">Student *</label>
-            <select className="form-select" value={form.student_id} onChange={set('student_id')}>
-              {students.map(s => <option key={s._id} value={s._id}>{s.name} ({s.current_stage})</option>)}
-            </select>
+            <Autocomplete
+              options={students}
+              value={form.student_id}
+              onChange={val => setForm(f => ({ ...f, student_id: val }))}
+              placeholder="Search student..."
+              valueKey="_id"
+              searchKey="name"
+              renderItem={s => `${s.name} (${s.current_stage})`}
+            />
           </div>
         )}
         <div className="form-group">

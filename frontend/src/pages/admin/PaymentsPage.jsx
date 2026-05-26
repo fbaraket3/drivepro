@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { api } from '../../utils/api';
-import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, SearchInput } from '../../components/shared/UI';
+import { toast, Modal, ConfirmModal, EmptyState, LoadingPage, SearchInput, Autocomplete } from '../../components/shared/UI';
 
 // ── Payment Form ──────────────────────────────────────────────────────────────
 function PaymentForm({ payment, students, onSave, onClose }) {
@@ -26,9 +26,14 @@ function PaymentForm({ payment, students, onSave, onClose }) {
       <div className="modal-body">
         <div className="form-group">
           <label className="form-label">Student *</label>
-          <select className="form-select" value={form.student_id} onChange={set('student_id')}>
-            {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <Autocomplete
+            options={students}
+            value={form.student_id}
+            onChange={val => setForm(f => ({ ...f, student_id: val }))}
+            placeholder="Search student..."
+            displayKey="name"
+            valueKey="id"
+          />
         </div>
         <div className="form-grid-2">
           <div className="form-group">
