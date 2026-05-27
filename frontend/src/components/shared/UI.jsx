@@ -1,6 +1,6 @@
 // src/components/shared/UI.jsx — Reusable UI primitives
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 // ─── Toast system ─────────────────────────────────────────────────────────────
 let _addToast = () => {};
