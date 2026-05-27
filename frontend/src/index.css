@@ -82,6 +82,9 @@ html, body, #root {
 .sidebar-brand {
   padding: 20px 18px 14px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .sidebar-brand h1 {
   font-size: 16px;

@@ -39,11 +39,15 @@ export default function AppLayout() {
     <div className="app-shell">
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
-          <h1>🚗 DrivePro</h1>
-          <span>Driving School Manager</span>
-          <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
-          ✕
-        </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>🚗 DrivePro</h1>
+              <span>Driving School Manager</span>
+            </div>
+            <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
+              ✕
+            </button>
+          </div>
         </div>
         
         <nav className="sidebar-nav">
