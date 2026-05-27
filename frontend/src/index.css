@@ -471,7 +471,7 @@ tbody tr:hover td { background: var(--surface2); }
 }
 
 .close-sidebar {
-  display: none;
+  display: flex;
 }
 @media (max-width: 768px) {
   .mobile-topbar {
